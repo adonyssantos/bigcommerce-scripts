@@ -1,0 +1,54 @@
+#!/bin/bash
+PROJECT_REPO=$1
+PROJECTS_DIR=$HOME/Developer
+PROJECT_NAME=$(echo $PROJECT_REPO | sed 's/.*\///' | sed 's/.git//')
+
+if [ ! -d $PROJECTS_DIR ]; then
+    echo "Projects directory not found, creating it: $PROJECTS_DIR"
+    mkdir $PROJECTS_DIR
+fi
+
+echo "Sourcing nvm"
+source  ~/.nvm/nvm.sh
+
+echo "Moving to projects directory: $PROJECTS_DIR"
+cd $PROJECTS_DIR
+
+echo "Cloning project repository: $PROJECT_REPO"
+git clone $PROJECT_REPO
+
+echo "Moving to project directory: $PROJECT_NAME"
+cd $PROJECT_NAME
+
+function alternative_install {
+    echo "Version 16 is not compabitle with the instalation, trying to install with version 18"
+    echo "Installing node version 18"
+    nvm install 18
+    echo "Using node version 18"
+    nvm use 18
+    echo "Installing project dependencies"
+    npm install --legacy-peer-deps
+}
+
+if [ -f .nvmrc ]; then
+    echo ".nvmrc file found, installing node version"
+    nvm install
+    echo "Using node version from .nvmrc file"
+    nvm use
+    echo "Installing project dependencies"
+    npm install --legacy-peer-deps
+else
+    (
+        trap 'alternative_install; exit 1' ERR # This will catch the error and run the alternative_install function
+
+        echo ".nvmrc file not found, using node version 16"
+        nvm use 16
+        echo "Installing project dependencies"
+        npm install --legacy-peer-deps
+    )
+fi
+
+echo "Opening project in Visual Studio Code"
+code . -r &
+
+echo "Project setup completed. Happy hacking!"
