@@ -3,6 +3,12 @@ PROJECT_REPO=$1
 PROJECTS_DIR=$HOME/Developer
 PROJECT_NAME=$(echo $PROJECT_REPO | sed 's/.*\///' | sed 's/.git//')
 
+if [ -z $PROJECT_REPO ]; then
+    echo "Please provide a project repository URL"
+    echo "Usage: bc-setup <repository-url>"
+    exit 1
+fi
+
 if [ ! -d $PROJECTS_DIR ]; then
     echo "Projects directory not found, creating it: $PROJECTS_DIR"
     mkdir $PROJECTS_DIR
